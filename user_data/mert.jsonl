@@ -1,0 +1,7 @@
+{"ts": "2025-09-03T11:33:17Z", "user": "mert", "session_id": "95b4501426194e0b81a5cc0919e0fa16", "kind": "login", "meta": {"agent": "gradio_app", "version": 1}}
+{"ts": "2025-09-03T11:33:20Z", "user": "mert", "session_id": "95b4501426194e0b81a5cc0919e0fa16", "kind": "chat_user", "text": "hey"}
+{"ts": "2025-09-03T11:33:21Z", "user": "mert", "session_id": "95b4501426194e0b81a5cc0919e0fa16", "kind": "chat_assistant", "text": "Hello! How can I help you with PostgreSQL today? If you have any questions about database setup, queries, performance tuning, or anything else, just let me know!"}
+{"ts": "2025-09-03T11:38:16Z", "user": "mert", "session_id": "5fcfe31c6e5e40b789b915c6d04117e3", "kind": "login", "meta": {"agent": "gradio_app", "version": 1}}
+{"ts": "2025-09-03T11:38:19Z", "user": "mert", "session_id": "5fcfe31c6e5e40b789b915c6d04117e3", "kind": "chat_user", "text": "hey"}
+{"ts": "2025-09-03T11:38:21Z", "user": "mert", "session_id": "5fcfe31c6e5e40b789b915c6d04117e3", "kind": "chat_assistant", "text": "Hello! 👋 How can I help you with PostgreSQL today? If you have any questions about queries, setup, performance, or anything else, just let me know!"}
+{"ts": "2025-09-03T11:38:49Z", "user": "mert", "session_id": "5fcfe31c6e5e40b789b915c6d04117e3", "kind": "sql", "query": "SELECT * FROM sales;", "row_limit": 200, "row_count": 200, "meta": "Rows: 200 | Time: 0.034s"}
