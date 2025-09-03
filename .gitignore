@@ -1,4 +1,5 @@
 .gradio/
 .user_data
 __pycache__
+
 DB_SYS_PROMPT.txt
