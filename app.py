@@ -6,10 +6,10 @@ import uuid, asyncio
 
 from sql_tab import run_sql
 from logger import log_event
-from chat_helpers import build_input_from_history, SQL_SYSTEM_PROMPT
-
+from chat_helpers import build_input_from_history, get_db_sys_prompt
 
 oclient = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+max_rows = 100
 
 async def respond_once(message, history):
 
@@ -17,7 +17,7 @@ async def respond_once(message, history):
     kwargs = dict(
         model="gpt-4.1",
         input=text_input,
-        instructions=SQL_SYSTEM_PROMPT,
+        instructions=get_db_sys_prompt(),
         tools=[{"type": "web_search"}],
         tool_choice="auto",
         parallel_tool_calls=True,
@@ -36,7 +36,7 @@ async def respond(message, history):
     kwargs = dict(
         model="gpt-4.1",
         input=text_input,
-        instructions=SQL_SYSTEM_PROMPT,
+        instructions=get_db_sys_prompt(),
         tools=[{"type": "web_search"}],
         tool_choice="auto",
         parallel_tool_calls=True,
@@ -68,6 +68,14 @@ async def chat_driver(user_message, messages_history, _user_name, _session_id):
 
     # after stream finished, log the final assistant text
     asyncio.create_task(log_event(_user_name, _session_id, "chat_assistant", {"text": assistant_text}))
+
+async def post_completion_code(_user_name, _session_id):
+    code = "9C1F4B2E"
+    msg = f"the completion code is {code}"
+    updated = [{"role": "assistant", "content": msg}]
+
+    await log_event(_user_name, _session_id, "completion_code", {"code": code})
+    return updated
 
 with gr.Blocks(title="Movie Database", theme="soft") as demo:
     # gr.Markdown("## Movie Database Bot and SQL Console")
@@ -140,11 +148,6 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                         run_btn = gr.Button("Run", variant="primary")
                         clear_btn = gr.Button("Clear")
 
-                    max_rows = gr.Slider(
-                        10, 5000, value=200, step=10,
-                        label="Row limit (auto-applied if missing)"
-                    )
-
                     results = gr.Dataframe(
                         label="Results",
                         wrap=True,
@@ -153,15 +156,14 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                     meta = gr.Markdown("Ready.")
                     plan = gr.Markdown("", label="Explain/Plan") 
 
-            async def on_run(q, lim, _user_name, _session_id):
-                # run the blocking DB call off the loop
-                df, meta_msg, _ = await asyncio.to_thread(run_sql, q, int(lim), False)
+            async def on_run(q, _user_name, _session_id):
+                df, meta_msg, _ = await asyncio.to_thread(run_sql, q, max_rows, False)
 
                 await log_event(
                     _user_name, _session_id, "sql",
                     {
                         "query": q,
-                        "row_limit": int(lim),
+                        "row_limit": max_rows,
                         "row_count": int(getattr(df, "shape", [0])[0]),
                         "meta": meta_msg,
                     },
@@ -171,8 +173,7 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
             def on_clear():
                 return "", pd.DataFrame(), "Cleared.", ""
 
-            run_btn.click(on_run, [sql_input, max_rows, user_name, session_id], [results, meta, plan])
-
+            run_btn.click(on_run, [sql_input, user_name, session_id], [results, meta, plan])
 
             with gr.Tab("Chat"):
                 chatbot = gr.Chatbot(type="messages", label="Conversation", height=450)
@@ -185,6 +186,7 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                         container=False,
                     )
                     send_btn = gr.Button("Send", variant="primary", scale=1)
+                    code_btn = gr.Button("Completion code", variant="secondary", scale=1)
 
                 def _clear_input():
                     return ""
@@ -194,6 +196,12 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
 
                 ev2 = chat_input.submit(chat_driver, [chat_input, chatbot, user_name, session_id], [chatbot, chat_input])
                 ev2.then(_clear_input, None, [chat_input])
+
+                code_btn.click(
+                    post_completion_code,
+                    inputs=[user_name, session_id],
+                    outputs=[chatbot],
+                )
         
         outputs = [identify_view, app_view, id_msg, user_name, session_id]
         enter_btn.click(do_login, inputs=[name_tb], outputs=outputs)

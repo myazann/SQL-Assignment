@@ -45,15 +45,28 @@ def _return_conn(conn):
         except Exception: pass
 
 
-WRITE_PATTERN = re.compile(
-    r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|VACUUM|REINDEX|REPLACE|ATTACH|DETACH|GRANT|REVOKE|MERGE|CALL|DO)\b",
-    re.IGNORECASE,
-)
+WRITE_FIRST_KEYWORDS = {
+    "INSERT","UPDATE","DELETE","DROP","ALTER","CREATE","TRUNCATE",
+    "VACUUM","REINDEX","GRANT","REVOKE","MERGE","CALL","DO",
+    "ATTACH","DETACH" 
+}
 
 def is_write_query(sql: str) -> bool:
-    # Look only at the first non-empty statement
-    first = re.split(r";\s*", sql.strip(), maxsplit=1)[0]
-    return bool(WRITE_PATTERN.search(first))
+    """
+    Returns True if the first *statement* is a write. Ignores function names like REPLACE().
+    Handles WITH ... (SELECT ...) vs WITH ... INSERT/UPDATE/DELETE/MERGE ...
+    """
+    first_stmt = re.split(r";\s*", sql.strip(), maxsplit=1)[0]
+
+    # If it starts with WITH, decide based on the main statement following the CTEs
+    if re.match(r"^\s*WITH\b", first_stmt, flags=re.IGNORECASE):
+        # Heuristic: if an INSERT/UPDATE/DELETE/MERGE appears after the CTE block, treat as write
+        return bool(re.search(r"\)\s*(INSERT|UPDATE|DELETE|MERGE)\b", first_stmt, flags=re.IGNORECASE))
+
+    # Otherwise, just check the very first keyword
+    m = re.match(r"^\s*([A-Za-z]+)", first_stmt)
+    first_kw = m.group(1).upper() if m else ""
+    return first_kw in WRITE_FIRST_KEYWORDS
 
 def enforce_limit(sql: str, limit: int) -> str:
     """
@@ -67,6 +80,7 @@ def enforce_limit(sql: str, limit: int) -> str:
     return first
 
 def run_sql(query: str, max_rows: int, allow_writes: bool):
+    
     if not query or not query.strip():
         return pd.DataFrame(), "Provide a SQL query.", 0.0
 

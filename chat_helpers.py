@@ -2,21 +2,19 @@ import tiktoken
 
 MAX_TOKENS = 16000
 
-SYSTEM_PROMPT = (
-    "You are a helpful, source-aware assistant. "
-    "Use web search for fresh/niche/verify-able facts. "
-    "When you use search, include brief citations as links."
-)
-
 SQL_SYSTEM_PROMPT = (
     "You are a helpful assistant that answers questions about PostgreSQL databases. "
     "When you use search, include brief citations as links. "
     "Use markdowns to separate the code and the text in your output. "
 )
 
+def get_db_sys_prompt():
+    with open("DB_SYS_PROMPT.txt", "r") as f:
+        return f.read()
+
 def build_input_from_history(message, history):
     parts = []
-    parts.append({"role": "system", "content": SQL_SYSTEM_PROMPT})
+    parts.append({"role": "system", "content": get_db_sys_prompt()})
     # prior turns
     for msg in history:
         if msg["role"] == "user":
@@ -41,8 +39,6 @@ def count_tokens(messages, model="gpt-4.1"):
     return num_tokens
 
 def truncate_history(messages, max_tokens=MAX_TOKENS, model="gpt-4.1"):
-    """Trim history from the oldest messages if over context window."""
     while count_tokens(messages, model=model) > max_tokens and len(messages) > 2:
-        # remove the second message (first after system prompt)
         messages.pop(1)
     return messages
