@@ -17,6 +17,7 @@ async def respond_once(message, history):
     kwargs = dict(
         model="gpt-4.1",
         input=text_input,
+        temperature=0,
         instructions=get_db_sys_prompt(),
         tools=[{"type": "web_search"}],
         tool_choice="auto",
@@ -36,6 +37,7 @@ async def respond(message, history):
     kwargs = dict(
         model="gpt-4.1",
         input=text_input,
+        temperature=0,
         instructions=get_db_sys_prompt(),
         tools=[{"type": "web_search"}],
         tool_choice="auto",
@@ -84,14 +86,14 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
 
     with gr.Column(visible=True) as identify_view:
         gr.Markdown("### Login")
-        name_tb = gr.Textbox(label="Your name (required)", placeholder="Please enter your full name, including your last name", autofocus=True)
+        name_tb = gr.Textbox(label="Student ID (required)", placeholder="Please enter your student ID", autofocus=True)
         enter_btn = gr.Button("Enter", variant="primary")
         id_msg = gr.Markdown("") 
 
     async def do_login(name):
         name = (name or "").strip()
         if not name:
-            return (gr.update(visible=True), gr.update(visible=False), "⚠️ Please enter your name to continue.", "", "")
+            return (gr.update(visible=True), gr.update(visible=False), "⚠️ Please enter your student ID to continue.", "", "")
         sid = uuid.uuid4().hex
         await log_event(name, sid, "login", {"meta": {"agent": "gradio_app", "version": 1}})
         return (gr.update(visible=False), gr.update(visible=True), "", name, sid)
