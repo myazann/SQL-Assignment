@@ -7,8 +7,8 @@ import psycopg2.extras as extras
 from psycopg2.pool import SimpleConnectionPool
 
 
-DB_NAME = os.getenv("PGDATABASE", "DBManagement")
-DB_USER = os.getenv("PGUSER", "postgres")
+DB_NAME = os.getenv("PGDATABASE", "mert")
+DB_USER = os.getenv("PGUSER", "mert")
 DB_PASS = os.getenv("POSTGRES_PASSWORD")
 DB_HOST = os.getenv("PGHOST", "127.0.0.1")
 DB_PORT = int(os.getenv("PGPORT", "5432"))

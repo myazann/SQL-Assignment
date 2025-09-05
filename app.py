@@ -107,9 +107,11 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                 <h2> Platform Usage and the Assignment </h2>
                 <br>
                 <ul>
-                    <li>You can use the SQL tab to check if you have the correct query for the question asked in the survey.</li>
-                    <li>The chat tab provides you a chatbot to ask questions about PostgreSQL, which is backed up by GPT-4.1.</li>
-                    <li>You are not constrained to use the chatbot, but you have to generate a completion code to move onto the next question. The code can be generated via the chatbot.</li>
+                    <li> You can use the SQL tab to check if you have the correct query for the question asked in the survey.</li>
+                    <li> The chat tab provides you a chatbot (that is connected to ChatGPT) to ask questions about PostgreSQL.</li>
+                    <li> The chatbot knows the tables and their columns, and would help with questions. Still, you are not constrained to use the chatbot.</li>
+                    <li> Even with its knowledge, the bot can still make mistakes.</li>
+                    <li> When you are finished, the survey platform will ask for a completion code. You can find it in the chat tab. </li>
                     <li> <b> Reminder: </b> This assignment is optional and ungraded. It is designed for you to practice. You can be relaxed, it is okay to have errors. Good luck! </li>
                 </ul>
 
@@ -130,7 +132,7 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                 <br>
                 <br>
                 <ul>
-                    <li> Check the datatypes of the columns. A column that stores a numerical information might have the datatype "text". </li>
+                    <li> Check the datatypes of the columns. A column that stores numerical information might have the datatype "text". </li>
                     <li> Datatypes might not be exactly the same as the excel files. </li>
                     <li> Some columns might store null values as text, like "n/a" or "null". </li>
                     <li> Columns with same names might store different values in different tables. Example: "url" column in metadata and sales.</li>
