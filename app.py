@@ -132,6 +132,7 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                 <br>
                 <br>
                 <ul>
+                    <li> <b>Important:</b> Some movies have the same title but they are different movies. </li>
                     <li> Check the datatypes of the columns. A column that stores numerical information might have the datatype "text". </li>
                     <li> Datatypes might not be exactly the same as the excel files. </li>
                     <li> Some columns might store null values as text, like "n/a" or "null". </li>
