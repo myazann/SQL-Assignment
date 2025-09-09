@@ -102,22 +102,20 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
 
         welcome_md = gr.Markdown("") 
         with gr.Tabs():
-            with gr.Tab("Usage"):
+            with gr.Tab("Assignment"):
                 gr.Markdown("""
                 <h2> Platform Usage and the Assignment </h2>
                 <br>
                 <ul>
-                    <li> You can use the SQL tab to check if you have the correct query for the question asked in the survey.</li>
-                    <li> The chat tab provides you a chatbot (that is connected to ChatGPT) to ask questions about PostgreSQL.</li>
-                    <li> The chatbot knows the tables and their columns, and would help with questions. Still, you are not constrained to use the chatbot.</li>
-                    <li> Even with its knowledge, the bot can still make mistakes.</li>
-                    <li> When you are finished, the survey platform will ask for a completion code. You can find it in the chat tab. </li>
+                    <li> You can use the "SQL" tab to run your queries and see if you have the correct results.</li>
+                    <li> The "Chatbot" tab provides you a chatbot (that is connected to ChatGPT) to ask questions about PostgreSQL and the database.</li>
+                    <li> The chatbot knows the tables and their columns, and would help with questions.</li>
+                    <li> Even with its knowledge, the chatbot can still make mistakes.</li>
+                    <li> When you are finished with all questions, the survey platform will ask for a completion code. You can find it in the "Chatbot" tab. </li>
                     <li> <b> Reminder: </b> This assignment is optional and ungraded. It is designed for you to practice. You can be relaxed, it is okay to have errors. Good luck! </li>
                 </ul>
-
                 <h3> Database </h3>
-
-                The database have four tables, each corresponding to the 4 excel files you have for the project:
+                The database has 4 tables, each corresponding to the 4 excel files you have for the project:
                 <ul>
                     <li>sales</li>
                     <li>metadata</li>
@@ -125,21 +123,46 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                     <li>expert_reviews</li>
                 </ul>
                 <br>
-                Each table has all the columns of the excel files, except for the "Rev" columns, which are the review texts.
-                <br>
-                <br>
                 <b> Important Notes: </b> 
                 <br>
                 <br>
                 <ul>
-                    <li> <b>Important:</b> Some movies have the same title but they are different movies. </li>
-                    <li> Check the datatypes of the columns. A column that stores numerical information might have the datatype "text". </li>
+                    <li> A proper ERD or foreign key relationships are not defined for the tables. You can still join them based on the column names, but be careful. </li>
+                    <li> Some movies have the same title but they are different movies. </li>
+                    <li> A column that stores numerical information might have the datatype "text". </li>
                     <li> Datatypes might not be exactly the same as the excel files. </li>
                     <li> Some columns might store null values as text, like "n/a" or "null". </li>
-                    <li> Columns with same names might store different values in different tables. Example: "url" column in metadata and sales.</li>
-                    <li> A proper ERD or foreign key relationships are not defined for the tables. You can still join tables based on the column names, but be careful. </li>
+                    <li> Columns with the same names might store different values in different tables. Example: "url" column in metadata and sales.</li>
                 </ul>
                 """)
+
+            with gr.Tab("Chatbot"):
+                chatbot = gr.Chatbot(type="messages", label="Conversation", height=450)
+
+                with gr.Row():
+                    chat_input = gr.Textbox(
+                        placeholder="How can I help you with PostgreSQL today?",
+                            scale=8,
+                            autofocus=True,
+                            container=False,
+                        )
+                    send_btn = gr.Button("Send", variant="primary", scale=1)
+                    code_btn = gr.Button("Completion code", variant="secondary", scale=1)
+
+                def _clear_input():
+                    return ""
+
+                ev = send_btn.click(chat_driver, [chat_input, chatbot, user_name, session_id], [chatbot, chat_input])
+                ev.then(_clear_input, None, [chat_input])
+
+                ev2 = chat_input.submit(chat_driver, [chat_input, chatbot, user_name, session_id], [chatbot, chat_input])
+                ev2.then(_clear_input, None, [chat_input])
+
+                code_btn.click(
+                        post_completion_code,
+                        inputs=[user_name, session_id],
+                        outputs=[chatbot],
+                    )
 
             with gr.Tab("SQL"):
                 with gr.Column(): 
@@ -156,9 +179,9 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                     results = gr.Dataframe(
                         label="Results",
                         wrap=True,
-                        interactive=False,
+                        interactive=True,
                     )
-                    meta = gr.Markdown("Ready.")
+                    meta = gr.Markdown("")
                     plan = gr.Markdown("", label="Explain/Plan") 
 
             async def on_run(q, _user_name, _session_id):
@@ -179,34 +202,9 @@ with gr.Blocks(title="Movie Database", theme="soft") as demo:
                 return "", pd.DataFrame(), "Cleared.", ""
 
             run_btn.click(on_run, [sql_input, user_name, session_id], [results, meta, plan])
+            clear_btn.click(on_clear, inputs=None, outputs=[sql_input, results, meta, plan])
 
-            with gr.Tab("Chat"):
-                chatbot = gr.Chatbot(type="messages", label="Conversation", height=450)
-
-                with gr.Row():
-                    chat_input = gr.Textbox(
-                        placeholder="How can I help you with PostgreSQL today?",
-                        scale=8,
-                        autofocus=True,
-                        container=False,
-                    )
-                    send_btn = gr.Button("Send", variant="primary", scale=1)
-                    code_btn = gr.Button("Completion code", variant="secondary", scale=1)
-
-                def _clear_input():
-                    return ""
-
-                ev = send_btn.click(chat_driver, [chat_input, chatbot, user_name, session_id], [chatbot, chat_input])
-                ev.then(_clear_input, None, [chat_input])
-
-                ev2 = chat_input.submit(chat_driver, [chat_input, chatbot, user_name, session_id], [chatbot, chat_input])
-                ev2.then(_clear_input, None, [chat_input])
-
-                code_btn.click(
-                    post_completion_code,
-                    inputs=[user_name, session_id],
-                    outputs=[chatbot],
-                )
+ 
         
         outputs = [identify_view, app_view, id_msg, user_name, session_id]
         enter_btn.click(do_login, inputs=[name_tb], outputs=outputs)

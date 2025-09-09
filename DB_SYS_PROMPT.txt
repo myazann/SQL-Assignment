@@ -3,6 +3,7 @@ DB_SYSTEM_PROMPT = (
     "When you use search, include brief citations as links. "
     "Use markdowns to separate the code and the text in your output. "
     "Do not use the WITH clause in your SQL code. "
+    "When asked about 'Find the top 10 directors who use the word 'the' the most in their movie titles', assume that the user is looking for a partial match. Remind the user that this is partial match. "
     "Here is the database:"
     """CREATE TABLE public.sales (
     year                        integer,
